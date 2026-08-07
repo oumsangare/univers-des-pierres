@@ -1,0 +1,453 @@
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block title %}{{ produit.nom }} - Univers des Pierres{% endblock %}
+
+{% block content %}
+<!-- Product Detail Banner -->
+<section class="product-detail-banner">
+    <div class="banner-overlay"></div>
+    <div class="container">
+        <div class="banner-content">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'boutique' %}">Boutique</a></li>
+                    {% if produit.categorie %}
+                        <li class="breadcrumb-item"><a href="{% url 'boutique' %}?category={{ produit.categorie.id }}">{{ produit.categorie.nom }}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ produit.nom }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<!-- Product Detail Section -->
+<section class="product-detail-section py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-lg-6 mb-4">
+                <div class="product-gallery">
+                    <div class="main-image mb-3">
+                        {% if produit.image %}
+                            <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" id="mainProductImage">
+                        {% else %}
+                            <img src="{% static 'img/default-product.jpg' %}" alt="{{ produit.nom }}" id="mainProductImage">
+                        {% endif %}
+                    </div>
+                    <div class="thumbnail-images">
+                        {% for img in product_images %}
+                            <div class="thumbnail {% if forloop.first %}active{% endif %}">
+                                <img src="{{ img }}" alt="{{ produit.nom }}" onclick="changeMainImage(this.src)">
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Info -->
+            <div class="col-lg-6">
+                <div class="product-info">
+                    <h1 class="product-title">{{ produit.nom }}</h1>
+                    
+                    <!-- Badges -->
+                    <div class="product-badges mb-3">
+                        {% if produit.est_nouveau %}
+                            <span class="badge badge-success">Nouveau</span>
+                        {% endif %}
+                        {% if produit.ancien_prix and produit.ancien_prix > produit.prix %}
+                            <span class="badge badge-danger">Promo -{{ produit.reduction_pourcentage }}%</span>
+                        {% endif %}
+                        {% if produit.meilleure_vente %}
+                            <span class="badge badge-warning">Top vente</span>
+                        {% endif %}
+                        {% if produit.est_populaire %}
+                            <span class="badge badge-info">Populaire</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="product-price mb-3">
+                        {% if produit.ancien_prix and produit.ancien_prix > produit.prix %}
+                            <span class="current-price">{{ produit.prix }} FCFA</span>
+                            <span class="old-price">{{ produit.ancien_prix }} FCFA</span>
+                        {% else %}
+                            <span class="current-price">{{ produit.prix }} FCFA</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Availability -->
+                    <div class="product-availability mb-3">
+                        {% if produit.stock > 0 %}
+                            <span class="badge bg-success">En stock ({{ produit.stock }})</span>
+                        {% else %}
+                            <span class="badge bg-danger">Rupture de stock</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Category -->
+                    {% if produit.categorie %}
+                        <div class="product-category mb-3">
+                            <span class="text-muted">Catégorie : </span>
+                            <a href="{% url 'boutique' %}?category={{ produit.categorie.id }}" class="text-primary">{{ produit.categorie.nom }}</a>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Description -->
+                    <div class="product-description mb-4">
+                        <h5>Description</h5>
+                        <p>{{ produit.description }}</p>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="product-actions">
+                        <form action="{% url 'ajouter_au_panier' produit.id %}" method="POST">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-primary" type="button" onclick="decrementQuantity()">-</button>
+                                        <input type="number" class="form-control text-center" id="quantity" name="quantite" value="1" min="1" max="{{ produit.stock }}">
+                                        <button class="btn btn-outline-primary" type="button" onclick="incrementQuantity()">+</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary w-100" {% if produit.stock == 0 %}disabled{% endif %}>
+                                        <i class="fas fa-shopping-cart me-2"></i>Ajouter au panier
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-12">
+                                <a href="{% url 'commande_produit' produit.id %}" class="btn btn-success w-100">
+                                    <i class="fas fa-credit-card me-2"></i>Commander
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-12">
+                                <button class="btn btn-outline-secondary w-100" onclick="shareProduct()">
+                                    <i class="fas fa-share-alt me-2"></i>Partager
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Similar Products Section -->
+{% if produits_similaires %}
+<section class="similar-products-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold">Produits Similaires</h2>
+            <p class="text-muted">Vous aimerez aussi</p>
+        </div>
+        
+        <div class="row">
+            {% for produit_similaire in produits_similaires %}
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if produit_similaire.image %}
+                                <img src="{{ produit_similaire.image.url }}" alt="{{ produit_similaire.nom }}">
+                            {% else %}
+                                <img src="{% static 'img/default-product.jpg' %}" alt="{{ produit_similaire.nom }}">
+                            {% endif %}
+                        </div>
+                        <div class="product-info p-3">
+                            <h5 class="product-name">{{ produit_similaire.nom }}</h5>
+                            <div class="product-price">
+                                {% if produit_similaire.ancien_prix and produit_similaire.ancien_prix > produit_similaire.prix %}
+                                    <span class="current-price">{{ produit_similaire.prix }} FCFA</span>
+                                    <span class="old-price">{{ produit_similaire.ancien_prix }} FCFA</span>
+                                {% else %}
+                                    <span class="current-price">{{ produit_similaire.prix }} FCFA</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-detail-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 40px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-detail-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    opacity: 0.1;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.product-detail-banner .banner-content {
+    position: relative;
+    z-index: 1;
+}
+
+.product-detail-banner .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+}
+
+.product-detail-banner .breadcrumb-item.active {
+    color: white;
+}
+
+.product-detail-section {
+    background-color: white;
+}
+
+.product-gallery .main-image {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(233, 30, 99, 0.15);
+}
+
+.product-gallery .main-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.product-gallery .main-image:hover img {
+    transform: scale(1.05);
+}
+
+.thumbnail-images {
+    display: flex;
+    gap: 10px;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.thumbnail:hover,
+.thumbnail.active {
+    border-color: var(--primary-color);
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-title {
+    color: var(--primary-color);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.product-badges .badge {
+    margin-right: 5px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-danger {
+    background-color: var(--primary-color);
+}
+
+.badge-warning {
+    background-color: #ffc107;
+}
+
+.badge-info {
+    background-color: var(--secondary-color);
+}
+
+.product-price {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.current-price {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.old-price {
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 10px;
+    font-size: 1.2rem;
+}
+
+.product-availability {
+    margin-bottom: 1rem;
+}
+
+.product-category a {
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.product-description h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.product-description p {
+    color: var(--text-color);
+    line-height: 1.8;
+}
+
+.product-actions .input-group {
+    max-width: 150px;
+}
+
+.similar-products-section {
+    background-color: var(--light-pink);
+}
+
+.product-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+}
+
+.product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
+}
+
+.product-card .product-image {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-card .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.product-card .product-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.product-card:hover .product-overlay {
+    opacity: 1;
+}
+
+.product-card .product-name {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.product-card .current-price {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.product-card .old-price {
+    color: #999;
+    text-decoration: line-through;
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeMainImage(src) {
+    document.getElementById('mainProductImage').src = src;
+}
+
+function incrementQuantity() {
+    const input = document.getElementById('quantity');
+    const max = parseInt(input.max);
+    if (parseInt(input.value) < max) {
+        input.value = parseInt(input.value) + 1;
+    }
+}
+
+function decrementQuantity() {
+    const input = document.getElementById('quantity');
+    if (parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+    }
+}
+
+function addToWishlist(productId) {
+    alert('Produit ajouté aux favoris (ID: ' + productId + ')');
+}
+
+function shareProduct() {
+    const url = '{{ product_url }}';
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ produit.nom }}',
+            url: url
+        });
+    } else {
+        alert('URL copiée : ' + url);
+    }
+}
+</script>
+{% endblock %}

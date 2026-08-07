@@ -1,0 +1,266 @@
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block title %}Contact - Univers des Pierres{% endblock %}
+
+{% block content %}
+<!-- Contact Banner -->
+<section class="contact-banner">
+    <div class="banner-overlay"></div>
+    <div class="container">
+        <div class="banner-content text-center">
+            <h1 class="display-4 fw-bold">Contactez-Nous</h1>
+            <p class="lead">Nous sommes à votre écoute pour toute question</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Contact</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information Section -->
+<section class="contact-info-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h4>Téléphone</h4>
+                    {% if contact and contact.telephone %}
+                        <p>{{ contact.telephone }}</p>
+                    {% else %}
+                        <p>+225 0504334866</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h4>WhatsApp</h4>
+                    {% if contact and contact.whatsapp %}
+                        <p>{{ contact.whatsapp }}</p>
+                    {% else %}
+                        <p>+225 0504334866</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h4>Email</h4>
+                    {% if contact and contact.email %}
+                        <p>{{ contact.email }}</p>
+                    {% else %}
+                        <p>oumsang096@gmail.com</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-lg-6 mb-4">
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Adresse</h4>
+                    {% if contact and contact.adresse %}
+                        <p>{{ contact.adresse }}</p>
+                    {% else %}
+                        <p>Abidjan, Côte d'Ivoire</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4>Horaires</h4>
+                    <p>Ouvert 24h/24, 7j/7</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form Section -->
+<section class="contact-form-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="contact-form-card">
+                    <h3 class="text-center mb-4">Envoyez-nous un message</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ contact_form.nom.id_for_label }}" class="form-label">Votre nom</label>
+                                {{ contact_form.nom }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ contact_form.email.id_for_label }}" class="form-label">Votre email</label>
+                                {{ contact_form.email }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ contact_form.sujet.id_for_label }}" class="form-label">Sujet</label>
+                            {{ contact_form.sujet }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ contact_form.message.id_for_label }}" class="form-label">Message</label>
+                            {{ contact_form.message }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.contact-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    opacity: 0.1;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.contact-banner .banner-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.contact-banner h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.contact-banner .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+}
+
+.contact-banner .breadcrumb-item.active {
+    color: white;
+}
+
+.contact-info-section {
+    background-color: white;
+}
+
+.contact-info-card {
+    background: linear-gradient(135deg, #fff5f7 0%, #ffffff 100%);
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    height: 100%;
+}
+
+.contact-info-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
+}
+
+.contact-icon {
+    width: 70px;
+    height: 70px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.8rem;
+}
+
+.contact-info-card h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.contact-info-card p {
+    color: var(--text-color);
+    margin-bottom: 0;
+}
+
+.contact-form-section {
+    background-color: var(--light-pink);
+}
+
+.contact-form-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(233, 30, 99, 0.15);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.contact-form-card:hover {
+    border-color: var(--primary-color);
+}
+
+.contact-form-card h3 {
+    color: var(--primary-color);
+}
+
+.form-label {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-control {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,291 @@
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block title %}Mes Favoris{% endblock %}
+
+{% block content %}
+<!-- Favorites Banner -->
+<section class="favorites-banner">
+    <div class="banner-overlay"></div>
+    <div class="container">
+        <div class="banner-content text-center">
+            <h1 class="display-4 fw-bold">Mes Favoris</h1>
+            <p class="lead">
+                {% if favoris %}
+                    {{ favoris.count }} produit(s) en favoris
+                {% else %}
+                    Aucun favori pour le moment
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Favorites Section -->
+<section class="favorites-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                {% if favoris %}
+                    <div class="row">
+                        {% for favori in favoris %}
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="product-card">
+                                    <div class="product-image position-relative">
+                                        {% if favori.produit.image %}
+                                            <img src="{{ favori.produit.image.url }}" alt="{{ favori.produit.nom }}" loading="lazy">
+                                        {% else %}
+                                            <img src="{% static 'img/default-product.jpg' %}" alt="{{ favori.produit.nom }}" loading="lazy">
+                                        {% endif %}
+                                        
+                                        <!-- Badges -->
+                                        {% if favori.produit.est_nouveau %}
+                                            <span class="badge bg-success position-absolute top-0 start-0 m-2">Nouveau</span>
+                                        {% endif %}
+                                        {% if favori.produit.ancien_prix and favori.produit.ancien_prix > favori.produit.prix %}
+                                            {% if favori.produit.est_nouveau %}
+                                                <span class="badge badge-danger position-absolute" style="top: 35px; left: 0.5rem;">Promo</span>
+                                            {% else %}
+                                                <span class="badge badge-danger position-absolute top-0 start-0 m-2">Promo</span>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if favori.produit.meilleure_vente %}
+                                            <span class="badge badge-warning position-absolute top-0 end-0 m-2">Top vente</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="product-info p-3">
+                                        {% if favori.produit.categorie %}
+                                            <span class="badge bg-light text-dark mb-2">{{ favori.produit.categorie.nom }}</span>
+                                        {% endif %}
+                                        
+                                        <h5 class="product-name">{{ favori.produit.nom }}</h5>
+                                        
+                                        <div class="product-price mb-2">
+                                            {% if favori.produit.ancien_prix and favori.produit.ancien_prix > favori.produit.prix %}
+                                                <span class="text-decoration-line-through text-muted me-2">{{ favori.produit.ancien_prix }} FCFA</span>
+                                                <span class="text-primary fw-bold">{{ favori.produit.prix }} FCFA</span>
+                                            {% else %}
+                                                <span class="text-primary fw-bold">{{ favori.produit.prix }} FCFA</span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="stock-status mb-3">
+                                            {% if favori.produit.stock > 0 %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-check-circle"></i> En stock ({{ favori.produit.stock }})
+                                                </span>
+                                            {% else %}
+                                                <span class="text-danger">
+                                                    <i class="fas fa-times-circle"></i> Rupture de stock
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="product-buttons">
+                                            <a href="{% url 'detail_produit' favori.produit.slug %}" class="btn btn-outline-primary w-100 mb-2">
+                                                <i class="fas fa-eye me-2"></i>Voir détails
+                                            </a>
+                                            <form action="{% url 'ajouter_au_panier' favori.produit.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-primary w-100 {% if favori.produit.stock == 0 %}disabled{% endif %}">
+                                                    <i class="fas fa-shopping-cart me-2"></i>Ajouter au panier
+                                                </button>
+                                            </form>
+                                            <a href="{% url 'supprimer_favori' favori.id %}" class="btn btn-outline-danger w-100 mt-2 remove-favorite-btn" data-favorite-id="{{ favori.id }}">
+                                                <i class="fas fa-heart-broken me-2"></i>Retirer des favoris
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-heart fa-4x text-muted mb-3"></i>
+                        <h3 class="h4">Aucun favori</h3>
+                        <p class="text-muted">Vous n'avez pas encore ajouté de produits à vos favoris</p>
+                        <a href="{% url 'boutique' %}" class="btn btn-primary">Découvrir nos produits</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.favorites-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 60px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.favorites-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    opacity: 0.1;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.favorites-banner .banner-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.favorites-banner h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.favorites-section {
+    background-color: white;
+}
+
+.product-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+    height: 100%;
+    border: 2px solid transparent;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
+    border-color: var(--primary-color);
+}
+
+.product-card:active {
+    transform: translateY(-3px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 1.5rem;
+}
+
+.product-name {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.product-price {
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // AJAX pour retirer des favoris sans rechargement de page
+    const removeButtons = document.querySelectorAll('.remove-favorite-btn');
+    
+    removeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const actionUrl = this.href;
+            const productCard = this.closest('.product-card');
+            
+            fetch(actionUrl, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour le compteur des favoris
+                    const favoritesCountElement = document.getElementById('favorites-count');
+                    if (favoritesCountElement) {
+                        favoritesCountElement.textContent = data.favorites_count;
+                    }
+                    
+                    // Retirer la carte du DOM avec animation
+                    if (productCard) {
+                        productCard.style.opacity = '0';
+                        productCard.style.transform = 'scale(0.8)';
+                        setTimeout(() => {
+                            productCard.closest('.col-lg-4').remove();
+                            
+                            // Vérifier s'il n'y a plus de favoris
+                            const remainingCards = document.querySelectorAll('.product-card');
+                            if (remainingCards.length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                    
+                    // Afficher le message de notification
+                    showNotification(data.message, 'success');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showNotification('Une erreur est survenue', 'error');
+            });
+        });
+    });
+    
+    function showNotification(message, type) {
+        const messagesContainer = document.querySelector('.messages-container');
+        if (!messagesContainer) {
+            const container = document.createElement('div');
+            container.className = 'messages-container';
+            document.body.appendChild(container);
+        }
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+        messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        messageDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+        
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

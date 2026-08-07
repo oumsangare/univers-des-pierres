@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Univers des Pierres{% endblock %}</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/logo-icon.svg' %}">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="{% static 'images/logo-icon.svg' %}">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#e91e63">
+    
+    <!-- Mobile Web App Capable -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Univers Pierre">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=19">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header / Navigation -->
+    <header class="header">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                    <img src="{% static 'images/logo-horizontal.svg' %}?v=2" alt="Univers des Pierres Logo" width="280" height="75" class="me-2">
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'boutique' %}active{% endif %}" href="{% url 'boutique' %}">Boutique</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
+                        </li>
+                    </ul>
+                    
+                    <form class="d-flex me-3" action="{% url 'recherche' %}" method="GET">
+                        <div class="input-group">
+                            <input class="form-control" type="search" placeholder="Rechercher..." name="q" value="{{ request.GET.q }}">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'panier' %}" class="btn btn-outline-primary position-relative me-2">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
+                                {{ cart_count }}
+                            </span>
+                        </a>
+                        <a href="{% url 'boutique' %}" class="btn btn-primary">
+                            <i class="fas fa-shopping-bag me-2"></i>Commander
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="custom-message alert-{{ message.tags }}">
+                    <div class="message-icon">
+                        {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif message.tags == 'error' %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="message-content">
+                        {{ message }}
+                    </div>
+                    <button type="button" class="message-close" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white mt-5">
+        <div class="container py-3">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h6 class="mb-2">
+                        <i class="fas fa-store me-2"></i>Univers des Pierres
+                    </h6>
+                    <p class="text-white-50 small mb-2">
+                        Votre boutique en ligne de confiance. Qualité, rapidité et paiement à la livraison.
+                    </p>
+                </div>
+                
+                <div class="col-md-2 mb-3">
+                    <h6 class="mb-2">Liens rapides</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Accueil</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Boutique</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Catégories</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">À propos</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <h6 class="mb-2">Catégories</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="#" class="text-white-50 text-decoration-none">Téléphones</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Informatique</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Mode</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Beauté</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Maison</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-3 mb-3">
+                    <h6 class="mb-2">Contact</h6>
+                    <ul class="list-unstyled text-white-50 small">
+                        <li class="mb-1">
+                            <i class="fas fa-phone me-2"></i>
+                            <span id="footer-phone">+225 0504334866</span>
+                        </li>
+                        <li class="mb-1">
+                            <i class="fab fa-whatsapp me-2"></i>
+                            <span id="footer-whatsapp">+225 0504334866</span>
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-envelope me-2"></i>
+                            <span id="footer-email">oumsang096@gmail.com</span>
+                        </li>
+                        <li class="mb-1">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <span id="footer-address">Abidjan, Côte d'Ivoire</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="border-secondary my-2">
+            
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p class="text-white-50 small mb-0">
+                        &copy; 2024 Univers des Pierres. Tous droits réservés.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    // AJAX pour ajouter au panier sans rechargement de page
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartForms = document.querySelectorAll('form[action*="panier/ajouter"]');
+        
+        cartForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const actionUrl = this.action;
+                
+                fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mettre à jour le compteur du panier
+                        const cartCountElement = document.getElementById('cart-count');
+                        if (cartCountElement) {
+                            cartCountElement.textContent = data.cart_count;
+                        }
+                        
+                        // Afficher le message de notification
+                        showNotification(data.message, 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Une erreur est survenue', 'error');
+                });
+            });
+        });
+
+        // AJAX pour ajouter aux favoris sans rechargement de page
+        const favoriteLinks = document.querySelectorAll('a[href*="favoris/ajouter"]');
+        
+        favoriteLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const actionUrl = this.href;
+                
+                fetch(actionUrl, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mettre à jour le compteur des favoris
+                        const favoritesCountElement = document.getElementById('favorites-count');
+                        if (favoritesCountElement) {
+                            favoritesCountElement.textContent = data.favorites_count;
+                        }
+                        
+                        // Afficher le message de notification
+                        showNotification(data.message, 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showNotification('Une erreur est survenue', 'error');
+                });
+            });
+        });
+        
+        function showNotification(message, type) {
+            const messagesContainer = document.querySelector('.messages-container');
+            if (!messagesContainer) {
+                const container = document.createElement('div');
+                container.className = 'messages-container';
+                document.body.appendChild(container);
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `custom-message alert-${type}`;
+            
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            if (type === 'warning') icon = 'fa-exclamation-triangle';
+            
+            messageDiv.innerHTML = `
+                <div class="message-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="message-content">
+                    ${message}
+                </div>
+                <button type="button" class="message-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            const container = document.querySelector('.messages-container') || document.body;
+            container.appendChild(messageDiv);
+            
+            // Supprimer automatiquement après 3 secondes
+            setTimeout(() => {
+                messageDiv.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => messageDiv.remove(), 300);
+            }, 3000);
+        }
+    });
+    
+    // Service Worker Registration for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/static/js/service-worker.js')
+                .then(function(registration) {
+                    console.log('Service Worker enregistré avec succès:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('Erreur lors de l\'enregistrement du Service Worker:', error);
+                });
+        });
+    }
+    
+    // PWA Install Prompt
+    let deferredPrompt;
+    const installButton = document.createElement('button');
+    installButton.className = 'pwa-install-button';
+    installButton.innerHTML = '<i class="fas fa-download me-2"></i>Installer l\'app';
+    installButton.style.display = 'none';
+    document.body.appendChild(installButton);
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.style.display = 'block';
+        
+        installButton.addEventListener('click', () => {
+            installButton.style.display = 'none';
+            deferredPrompt.prompt();
+            
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('App installée');
+                } else {
+                    console.log('App non installée');
+                }
+                deferredPrompt = null;
+            });
+        });
+    });
+    
+    window.addEventListener('appinstalled', () => {
+        installButton.style.display = 'none';
+        console.log('App installée avec succès');
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

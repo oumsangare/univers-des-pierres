@@ -1,0 +1,366 @@
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block title %}Recherche{% if query %}: {{ query }}{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Search Banner -->
+<section class="search-banner">
+    <div class="banner-overlay"></div>
+    <div class="container">
+        <div class="banner-content text-center">
+            <h1 class="display-4 fw-bold">Résultats de recherche</h1>
+            <p class="lead">
+                {% if query %}
+                    "{{ query }}" - {{ total_results }} résultat(s) trouvé(s)
+                {% else %}
+                    Aucune recherche effectuée
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Search Results Section -->
+<section class="search-results-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                {% if query %}
+                    {% if page_obj %}
+                        <div class="row">
+                            {% for produit in page_obj %}
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <form action="{% url 'ajouter_au_panier' produit.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <div class="product-card">
+                                            <div class="product-image position-relative">
+                                                {% if produit.image %}
+                                                    <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" loading="lazy">
+                                                {% else %}
+                                                    <img src="{% static 'img/default-product.jpg' %}" alt="{{ produit.nom }}" loading="lazy">
+                                                {% endif %}
+                                                
+                                                <!-- Badges -->
+                                                {% if produit.est_nouveau %}
+                                                    <span class="badge bg-success position-absolute top-0 start-0 m-2">Nouveau</span>
+                                                {% endif %}
+                                                {% if produit.ancien_prix and produit.ancien_prix > produit.prix %}
+                                                    {% if produit.est_nouveau %}
+                                                        <span class="badge badge-danger position-absolute" style="top: 35px; left: 0.5rem;">Promo</span>
+                                                    {% else %}
+                                                        <span class="badge badge-danger position-absolute top-0 start-0 m-2">Promo</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                                {% if produit.meilleure_vente %}
+                                                    <span class="badge badge-warning position-absolute top-0 end-0 m-2">Top vente</span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="product-info p-3">
+                                                {% if produit.categorie %}
+                                                    <span class="badge bg-light text-dark mb-2">{{ produit.categorie.nom }}</span>
+                                                {% endif %}
+                                                
+                                                <h5 class="product-name">{{ produit.nom }}</h5>
+                                                
+                                                <div class="product-price mb-2">
+                                                    {% if produit.ancien_prix and produit.ancien_prix > produit.prix %}
+                                                        <span class="text-decoration-line-through text-muted me-2">{{ produit.ancien_prix }} FCFA</span>
+                                                        <span class="text-primary fw-bold">{{ produit.prix }} FCFA</span>
+                                                    {% else %}
+                                                        <span class="text-primary fw-bold">{{ produit.prix }} FCFA</span>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <div class="stock-status mb-3">
+                                                    {% if produit.stock > 0 %}
+                                                        <span class="text-success">
+                                                            <i class="fas fa-check-circle"></i> En stock ({{ produit.stock }})
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="text-danger">
+                                                            <i class="fas fa-times-circle"></i> Rupture de stock
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <div class="product-buttons">
+                                                    <a href="{% url 'detail_produit' produit.slug %}" class="btn btn-outline-primary w-100 mb-2">
+                                                        <i class="fas fa-eye me-2"></i>Voir détails
+                                                    </a>
+                                                    <button type="submit" class="btn btn-primary w-100 {% if produit.stock == 0 %}disabled{% endif %}">
+                                                        <i class="fas fa-shopping-cart me-2"></i>Ajouter au panier
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% empty %}
+                                <div class="col-12">
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                                        <h3 class="h4">Aucun résultat trouvé</h3>
+                                        <p class="text-muted">Essayez avec d'autres termes de recherche</p>
+                                        <a href="{% url 'boutique' %}" class="btn btn-primary">Voir tous les produits</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination améliorée -->
+                        {% if page_obj.has_other_pages %}
+                        <nav aria-label="Pagination" class="mt-4">
+                            <div class="d-flex flex-column align-items-center">
+                                <ul class="pagination pagination-lg">
+                                    {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link rounded-start" href="?page=1&q={{ query }}" title="Première page">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}" title="Page précédente">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link rounded-start"><i class="fas fa-angle-double-left"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                                    </li>
+                                    {% endif %}
+
+                                    <!-- Pages autour de la page actuelle -->
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link fw-bold">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}&q={{ query }}">{{ num }}</a>
+                                            </li>
+                                        {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}&q={{ query }}">{{ num }}</a>
+                                            </li>
+                                        {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}" title="Page suivante">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link rounded-end" href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}" title="Dernière page">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link rounded-end"><i class="fas fa-angle-double-right"></i></span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                                
+                                <!-- Info de pagination -->
+                                <div class="pagination-info mt-3 text-muted">
+                                    <small>
+                                        Affichage de <strong>{{ page_obj.start_index }}</strong> à <strong>{{ page_obj.end_index }}</strong> 
+                                        sur <strong>{{ page_obj.paginator.count }}</strong> résultats 
+                                        (Page <strong>{{ page_obj.number }}</strong> sur <strong>{{ page_obj.paginator.num_pages }}</strong>)
+                                    </small>
+                                </div>
+                            </div>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                            <h3 class="h4">Aucun résultat trouvé</h3>
+                            <p class="text-muted">Aucun produit ne correspond à votre recherche</p>
+                            <a href="{% url 'boutique' %}" class="btn btn-primary">Voir tous les produits</a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                        <h3 class="h4">Effectuez une recherche</h3>
+                        <p class="text-muted">Utilisez la barre de recherche pour trouver des produits</p>
+                        <a href="{% url 'boutique' %}" class="btn btn-primary">Voir tous les produits</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 60px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    opacity: 0.1;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.search-banner .banner-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.search-banner h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.search-results-section {
+    background-color: var(--light-pink);
+}
+
+/* Pagination améliorée */
+.pagination {
+    gap: 0.5rem;
+}
+
+.pagination .page-link {
+    color: var(--primary-color);
+    border: 2px solid #dee2e6;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    font-weight: 500;
+    transition: all 0.3s;
+    min-width: 45px;
+    text-align: center;
+}
+
+.pagination .page-link:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.2);
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #adb5bd;
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.product-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    border: 2px solid transparent;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
+    border-color: var(--primary-color);
+}
+
+.product-card:active {
+    transform: translateY(-3px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 1.5rem;
+}
+
+.product-name {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.product-price {
+    font-size: 1.1rem;
+}
+
+.pagination .page-link {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.pagination .page-link:hover {
+    color: var(--primary-color);
+    background-color: var(--light-pink);
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}

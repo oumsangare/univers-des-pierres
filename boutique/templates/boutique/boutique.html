@@ -1,0 +1,412 @@
+
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block title %}Boutique - Univers des Pierres{% endblock %}
+
+{% block content %}
+<!-- Boutique Banner -->
+<section class="boutique-banner">
+    <div class="banner-overlay"></div>
+    <div class="container">
+        <div class="banner-content text-center">
+            <h1 class="display-4 fw-bold">Notre Boutique</h1>
+            <p class="lead">Découvrez notre collection exclusive de produits de qualité</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Boutique</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<!-- Filters Section -->
+<section class="filters-section py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="filter-bar bg-white rounded-3 shadow-sm p-4">
+                    <form method="GET" action="{% url 'boutique' %}" class="row g-3">
+                        <!-- Search -->
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search" placeholder="Rechercher..." value="{{ search_query }}">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Category Filter -->
+                        <div class="col-md-3">
+                            <select class="form-select" name="category" id="categoryFilter">
+                                <option value="">Toutes les catégories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if category.id == category_id|add:0 %}selected{% endif %}>
+                                        {{ category.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Availability Filter -->
+                        <div class="col-md-3">
+                            <select class="form-select" name="availability" id="availabilityFilter">
+                                <option value="">Tous les stocks</option>
+                                <option value="in_stock" {% if availability == 'in_stock' %}selected{% endif %}>En stock</option>
+                                <option value="out_of_stock" {% if availability == 'out_of_stock' %}selected{% endif %}>Rupture de stock</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Sort -->
+                        <div class="col-md-3">
+                            <select class="form-select" name="sort" id="sortFilter">
+                                <option value="">Trier par</option>
+                                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Nouveautés</option>
+                                <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Plus populaires</option>
+                                <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+                                <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section class="products-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h4 mb-0">Nos Produits</h2>
+                    <p class="text-muted mb-0">{{ page_obj.paginator.count }} produit(s) trouvé(s)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for produit in page_obj %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <form action="{% url 'ajouter_au_panier' produit.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="product-card">
+                            <div class="product-image position-relative">
+                                {% if produit.image %}
+                                    <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" loading="lazy">
+                                {% else %}
+                                    <img src="{% static 'img/default-product.jpg' %}" alt="{{ produit.nom }}" loading="lazy">
+                                {% endif %}
+                                
+                                <!-- Badges -->
+                                {% if produit.est_nouveau %}
+                                    <span class="badge bg-success position-absolute top-0 start-0 m-2">Nouveau</span>
+                                {% endif %}
+                                {% if produit.ancien_prix and produit.ancien_prix > produit.prix %}
+                                    {% if produit.est_nouveau %}
+                                        <span class="badge badge-danger position-absolute" style="top: 35px; left: 0.5rem;">Promo</span>
+                                    {% else %}
+                                        <span class="badge badge-danger position-absolute top-0 start-0 m-2">Promo</span>
+                                    {% endif %}
+                                {% endif %}
+                                {% if produit.meilleure_vente %}
+                                    <span class="badge badge-warning position-absolute top-0 end-0 m-2">Top vente</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="product-info p-3">
+                                {% if produit.categorie %}
+                                    <span class="badge bg-light text-dark mb-2">{{ produit.categorie.nom }}</span>
+                                {% endif %}
+                                
+                                <h5 class="product-name">{{ produit.nom }}</h5>
+                                
+                                <div class="product-price mb-2">
+                                    {% if produit.ancien_prix and produit.ancien_prix > produit.prix %}
+                                        <span class="text-decoration-line-through text-muted me-2">{{ produit.ancien_prix }} FCFA</span>
+                                        <span class="text-primary fw-bold">{{ produit.prix }} FCFA</span>
+                                    {% else %}
+                                        <span class="text-primary fw-bold">{{ produit.prix }} FCFA</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="stock-status mb-3">
+                                    {% if produit.stock > 0 %}
+                                        <span class="text-success">
+                                            <i class="fas fa-check-circle"></i> En stock ({{ produit.stock }})
+                                        </span>
+                                    {% else %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-times-circle"></i> Rupture de stock
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="product-buttons">
+                                    <a href="{% url 'detail_produit' produit.slug %}" class="btn btn-outline-primary w-100 mb-2">
+                                        <i class="fas fa-eye me-2"></i>Voir détails
+                                    </a>
+                                    <button type="submit" class="btn btn-primary w-100 {% if produit.stock == 0 %}disabled{% endif %}">
+                                        <i class="fas fa-shopping-cart me-2"></i>Ajouter au panier
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                        <h3 class="h4">Aucun produit trouvé</h3>
+                        <p class="text-muted">Essayez de modifier vos critères de recherche</p>
+                        <a href="{% url 'boutique' %}" class="btn btn-primary">Voir tous les produits</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination améliorée -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <div class="d-flex flex-column align-items-center">
+                    <ul class="pagination pagination-lg">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link rounded-start" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" title="Première page">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" title="Page précédente">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link rounded-start"><i class="fas fa-angle-double-left"></i></span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- Pages autour de la page actuelle -->
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link fw-bold">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-2' and num < page_obj.number|add:'2' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" title="Page suivante">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link rounded-end" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}{% if availability %}&availability={{ availability }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" title="Dernière page">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link rounded-end"><i class="fas fa-angle-double-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <!-- Info de pagination -->
+                    <div class="pagination-info mt-3 text-muted">
+                        <small>
+                            Affichage de <strong>{{ page_obj.start_index }}</strong> à <strong>{{ page_obj.end_index }}</strong> 
+                            sur <strong>{{ page_obj.paginator.count }}</strong> produits 
+                            (Page <strong>{{ page_obj.number }}</strong> sur <strong>{{ page_obj.paginator.num_pages }}</strong>)
+                        </small>
+                    </div>
+                </div>
+            </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.boutique-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.boutique-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    opacity: 0.1;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.boutique-banner .banner-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.boutique-banner h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.boutique-banner .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+}
+
+.boutique-banner .breadcrumb-item.active {
+    color: white;
+}
+
+.filters-section {
+    background-color: var(--light-pink);
+}
+
+.filter-bar {
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.filter-bar:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.15);
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+}
+
+/* Pagination améliorée */
+.pagination {
+    gap: 0.5rem;
+}
+
+.pagination .page-link {
+    color: var(--primary-color);
+    border: 2px solid #dee2e6;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    font-weight: 500;
+    transition: all 0.3s;
+    min-width: 45px;
+    text-align: center;
+}
+
+.pagination .page-link:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.2);
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #adb5bd;
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.product-badges {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+}
+
+.product-actions {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    transition: bottom 0.3s ease;
+    z-index: 3;
+}
+
+.product-card:hover .product-actions {
+    bottom: 0;
+}
+
+.pagination .page-link {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--light-pink);
+    border-color: var(--primary-color);
+}
+</style>
+{% endblock %}

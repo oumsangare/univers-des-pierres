@@ -1,0 +1,136 @@
+/* Variables CSS */
+:root {
+    --primary-color: #e91e63;
+    --secondary-color: #9c27b0;
+    --accent-color: #ff5722;
+    --light-pink: #fff5f7;
+    --text-color: #333;
+    --light-text: #666;
+}
+
+/* Global Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-color);
+}
+
+/* Logo Styles */
+.navbar-brand img {
+    transition: transform 0.3s ease;
+    max-width: 280px;
+    height: auto;
+}
+
+.navbar-brand:hover img {
+    transform: scale(1.02);
+}
+
+/* Responsive Logo */
+@media (max-width: 768px) {
+    .navbar-brand img {
+        max-width: 200px;
+        height: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-brand img {
+        max-width: 150px;
+        height: auto;
+    }
+}
+
+/* Header */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar {
+    padding: 1rem 0;
+}
+
+/* Navigation Links */
+.nav-link {
+    font-weight: 500;
+    color: var(--text-color) !important;
+    transition: color 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transition: all 0.3s;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* PWA Install Button */
+.pwa-install-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 50px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+    cursor: pointer;
+    z-index: 1000;
+    display: none;
+    transition: all 0.3s;
+    animation: pulse 2s infinite;
+}
+
+.pwa-install-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(233, 30, 99, 0.5);
+    }
+}
+
+/* Footer */
+footer {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+}
+
+footer a {
+    color: white;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+footer a:hover {
+    opacity: 0.8;
+}

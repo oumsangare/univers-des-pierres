@@ -1,0 +1,394 @@
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block title %}Catégories - Univers des Pierres{% endblock %}
+
+{% block content %}
+<!-- Categories Banner -->
+<section class="categories-banner">
+    <div class="banner-overlay"></div>
+    <div class="container">
+        <div class="banner-content text-center">
+            <h1 class="display-4 fw-bold">Nos Catégories</h1>
+            <p class="lead">Découvrez nos différentes catégories de produits</p>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb justify-content-center">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Catégories</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<!-- Search Section -->
+<section class="search-section py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="search-bar bg-white rounded-3 shadow-sm p-4">
+                    <form method="GET" action="{% url 'categories' %}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Rechercher une catégorie..." value="{{ search_query }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Rechercher
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- All Categories Section -->
+<section class="all-categories-section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold">Toutes nos Catégories</h2>
+            <p class="text-muted">Explorez notre sélection complète de catégories</p>
+        </div>
+        
+        <div class="row">
+            {% for categorie in categories %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <a href="{% url 'boutique' %}?category={{ categorie.id }}" class="text-decoration-none">
+                        <div class="category-card">
+                            <div class="category-image">
+                                {% if categorie.image %}
+                                    <img src="{{ categorie.image.url }}" alt="{{ categorie.nom }}" loading="lazy">
+                                {% else %}
+                                    <img src="{% static 'img/default-category.jpg' %}" alt="{{ categorie.nom }}" loading="lazy">
+                                {% endif %}
+                                <div class="category-overlay">
+                                    <div class="category-count">
+                                        <i class="fas fa-box"></i>
+                                        <span>{{ categorie.nb_produits }} produit(s)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="category-info p-4">
+                                <h3 class="h5 fw-bold mb-2">{{ categorie.nom }}</h3>
+                                {% if categorie.description %}
+                                    <p class="text-muted mb-3">{{ categorie.description|truncatewords:15 }}</p>
+                                {% endif %}
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-shopping-bag me-2"></i>Voir les produits
+                                </button>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                        <h3 class="h4">Aucune catégorie trouvée</h3>
+                        <p class="text-muted">Essayez de modifier votre recherche</p>
+                        <a href="{% url 'categories' %}" class="btn btn-primary">Voir toutes les catégories</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Popular Categories Section -->
+{% if categories|length > 3 %}
+<section class="popular-categories-section py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold">Catégories Populaires</h2>
+            <p class="text-muted">Les catégories les plus consultées par nos clients</p>
+        </div>
+        
+        <div class="row">
+            {% for categorie in categories|slice:":3" %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <a href="{% url 'boutique' %}?category={{ categorie.id }}" class="text-decoration-none">
+                        <div class="popular-category-card">
+                            <div class="popular-category-image">
+                                {% if categorie.image %}
+                                    <img src="{{ categorie.image.url }}" alt="{{ categorie.nom }}" loading="lazy">
+                                {% else %}
+                                    <img src="{% static 'img/default-category.jpg' %}" alt="{{ categorie.nom }}" loading="lazy">
+                                {% endif %}
+                            </div>
+                            <div class="popular-category-info">
+                                <h3 class="h5 fw-bold">{{ categorie.nom }}</h3>
+                                <p class="text-muted">{{ categorie.nb_produits }} produits</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.categories-banner {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.categories-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+    background-size: 20px 20px;
+    opacity: 0.1;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.categories-banner .banner-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.categories-banner h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.categories-banner .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+}
+
+.categories-banner .breadcrumb-item.active {
+    color: white;
+}
+
+.search-section {
+    background-color: var(--light-pink);
+}
+
+.search-bar {
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.search-bar:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.15);
+}
+
+.all-categories-section {
+    background-color: var(--light-pink);
+}
+
+.category-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%;
+    border: 3px solid transparent;
+    position: relative;
+}
+
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transform: scaleX(0);
+    transition: transform 0.4s;
+}
+
+.category-card:hover::before {
+    transform: scaleX(1);
+}
+
+.category-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(233, 30, 99, 0.25);
+    border-color: var(--primary-color);
+}
+
+.category-image {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.category-card:hover .category-image img {
+    transform: scale(1.1);
+}
+
+.category-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 1rem;
+}
+
+.category-count {
+    background: rgba(233, 30, 99, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.category-count i {
+    margin-right: 5px;
+}
+
+.category-info {
+    padding: 1.5rem;
+    background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+    border-top: 1px solid rgba(233, 30, 99, 0.1);
+}
+
+.category-info h3 {
+    color: var(--black);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    transition: color 0.3s;
+}
+
+.category-card:hover .category-info h3 {
+    color: var(--primary-color);
+}
+
+.category-info p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.category-info .btn {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 20px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);
+}
+
+.category-info .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(233, 30, 99, 0.3);
+}
+
+.popular-categories-section {
+    background-color: white;
+}
+
+.popular-category-card {
+    background: linear-gradient(135deg, #fff5f7 0%, #ffffff 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%;
+    border: 3px solid transparent;
+    position: relative;
+}
+
+.popular-category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transform: scaleX(0);
+    transition: transform 0.4s;
+}
+
+.popular-category-card:hover::before {
+    transform: scaleX(1);
+}
+
+.popular-category-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(233, 30, 99, 0.25);
+    border-color: var(--primary-color);
+}
+
+.popular-category-image {
+    height: 180px;
+    overflow: hidden;
+}
+
+.popular-category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+
+.popular-category-card:hover .popular-category-image img {
+    transform: scale(1.1);
+}
+
+.popular-category-info {
+    padding: 1.5rem;
+    text-align: center;
+    background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+    border-top: 1px solid rgba(233, 30, 99, 0.1);
+}
+
+.popular-category-info h3 {
+    color: var(--black);
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    transition: color 0.3s;
+}
+
+.popular-category-card:hover .popular-category-info h3 {
+    color: var(--primary-color);
+}
+
+.popular-category-info p {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+</style>
+{% endblock %}
