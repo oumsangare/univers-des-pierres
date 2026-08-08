@@ -135,7 +135,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'oumsang098@gmail.com'
-EMAIL_HOST_PASSWORD = 'fmrnibxvgnssbliu'
+EMAIL_HOST_PASSWORD = 'fmrnibxvgnssbliu'# activer d'abord verifications en deux etapes ensuite creer un  mots de passe de l
 DEFAULT_FROM_EMAIL = 'oumsang098@gmail.com'
 ADMIN_EMAIL = 'oumsang098@gmail.com'
 
@@ -144,3 +144,7 @@ WHATSAPP_ENABLED = True
 WHATSAPP_API_URL = 'https://api.callmebot.com/whatsapp.php'
 WHATSAPP_PHONE = '+2250504334866'  # Votre numéro avec indicatif
 WHATSAPP_API_KEY = ''  # À obtenir depuis CallMeBot
+
+# Login/Logout URLs
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'

@@ -128,7 +128,18 @@
                             </div>
                         </div>
                         <div class="row g-3 mt-2">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
+                                {% if user.is_authenticated %}
+                                    <button class="btn btn-outline-danger w-100" id="add-to-favorites-btn" data-product-id="{{ produit.id }}">
+                                        <i class="fas fa-heart me-2"></i>Ajouter aux favoris
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'login' %}" class="btn btn-outline-danger w-100">
+                                        <i class="fas fa-heart me-2"></i>Connectez-vous pour ajouter aux favoris
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
                                 <button class="btn btn-outline-secondary w-100" onclick="shareProduct()">
                                     <i class="fas fa-share-alt me-2"></i>Partager
                                 </button>
@@ -415,6 +426,42 @@
 
 {% block extra_js %}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du bouton d'ajout aux favoris
+    const addToFavoritesBtn = document.getElementById('add-to-favorites-btn');
+    if (addToFavoritesBtn) {
+        addToFavoritesBtn.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            
+            fetch(`/favoris/ajouter/${productId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Mettre à jour le compteur des favoris
+                    const favoritesCountElement = document.getElementById('favorites-count');
+                    if (favoritesCountElement) {
+                        favoritesCountElement.textContent = data.favorites_count;
+                    }
+                    // Changer le bouton pour indiquer que le produit est déjà dans les favoris
+                    this.innerHTML = '<i class="fas fa-heart me-2"></i>Dans les favoris';
+                    this.classList.remove('btn-outline-danger');
+                    this.classList.add('btn-danger');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showNotification('Une erreur est survenue', 'error');
+            });
+        });
+    }
+});
+
 function changeMainImage(src) {
     document.getElementById('mainProductImage').src = src;
 }
@@ -434,8 +481,20 @@ function decrementQuantity() {
     }
 }
 
-function addToWishlist(productId) {
-    alert('Produit ajouté aux favoris (ID: ' + productId + ')');
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 
 function shareProduct() {

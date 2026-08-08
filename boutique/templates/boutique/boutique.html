@@ -153,6 +153,15 @@
                                     <button type="submit" class="btn btn-primary w-100 {% if produit.stock == 0 %}disabled{% endif %}">
                                         <i class="fas fa-shopping-cart me-2"></i>Ajouter au panier
                                     </button>
+                                    {% if user.is_authenticated %}
+                                        <button type="button" class="btn btn-outline-danger w-100 mt-2 add-to-favorites-btn" data-product-id="{{ produit.id }}">
+                                            <i class="fas fa-heart me-2"></i>Ajouter aux favoris
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'login' %}" class="btn btn-outline-danger w-100 mt-2">
+                                            <i class="fas fa-heart me-2"></i>Connectez-vous pour ajouter aux favoris
+                                        </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -409,4 +418,62 @@
     border-color: var(--primary-color);
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons d'ajout aux favoris
+    const addToFavoritesButtons = document.querySelectorAll('.add-to-favorites-btn');
+    
+    addToFavoritesButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const btn = this;
+            
+            fetch(`/favoris/ajouter/${productId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Mettre à jour le compteur des favoris
+                    const favoritesCountElement = document.getElementById('favorites-count');
+                    if (favoritesCountElement) {
+                        favoritesCountElement.textContent = data.favorites_count;
+                    }
+                    // Changer le bouton pour indiquer que le produit est déjà dans les favoris
+                    btn.innerHTML = '<i class="fas fa-heart me-2"></i>Dans les favoris';
+                    btn.classList.remove('btn-outline-danger');
+                    btn.classList.add('btn-danger');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showNotification('Une erreur est survenue', 'error');
+            });
+        });
+    });
+    
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+});
+</script>
 {% endblock %}

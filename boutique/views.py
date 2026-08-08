@@ -201,6 +201,11 @@ def ajouter_au_panier(request, produit_id):
     produit = get_object_or_404(Produit, id=produit_id)
     
     if produit.stock <= 0:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Ce produit est en rupture de stock.'
+            })
         messages.warning(request, 'Ce produit est en rupture de stock.')
         return redirect('boutique')
     
@@ -216,16 +221,27 @@ def ajouter_au_panier(request, produit_id):
             produit=produit,
             defaults={'quantite': 1, 'session_key': session_key}
         )
+        # Compter les items du panier pour l'utilisateur connecté
+        cart_count = PanierItem.objects.filter(utilisateur=request.user).count()
     else:
         panier_item, created = PanierItem.objects.get_or_create(
             session_key=session_key,
             produit=produit,
             defaults={'quantite': 1}
         )
+        # Compter les items du panier pour l'utilisateur non connecté
+        cart_count = PanierItem.objects.filter(session_key=session_key).count()
     
     if not created:
         panier_item.quantite += 1
         panier_item.save()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'message': f'{produit.nom} ajouté au panier',
+            'cart_count': cart_count
+        })
     
     messages.success(request, f'{produit.nom} ajouté au panier')
     return redirect('boutique')
