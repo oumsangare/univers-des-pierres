@@ -41,7 +41,7 @@
                         
                         <!-- Category Filter -->
                         <div class="col-md-3">
-                            <select class="form-select" name="category" id="categoryFilter">
+                            <select class="form-select" name="category" id="categoryFilter" onchange="this.form.submit()">
                                 <option value="">Toutes les catégories</option>
                                 {% for category in categories %}
                                     <option value="{{ category.id }}" {% if category.id == category_id|add:0 %}selected{% endif %}>
@@ -53,7 +53,7 @@
                         
                         <!-- Availability Filter -->
                         <div class="col-md-3">
-                            <select class="form-select" name="availability" id="availabilityFilter">
+                            <select class="form-select" name="availability" id="availabilityFilter" onchange="this.form.submit()">
                                 <option value="">Tous les stocks</option>
                                 <option value="in_stock" {% if availability == 'in_stock' %}selected{% endif %}>En stock</option>
                                 <option value="out_of_stock" {% if availability == 'out_of_stock' %}selected{% endif %}>Rupture de stock</option>
@@ -62,7 +62,7 @@
                         
                         <!-- Sort -->
                         <div class="col-md-3">
-                            <select class="form-select" name="sort" id="sortFilter">
+                            <select class="form-select" name="sort" id="sortFilter" onchange="this.form.submit()">
                                 <option value="">Trier par</option>
                                 <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Nouveautés</option>
                                 <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Plus populaires</option>
