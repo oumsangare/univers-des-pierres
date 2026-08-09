@@ -423,6 +423,24 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Restaurer la position de défilement après le triage
+    const scrollPosition = sessionStorage.getItem('scrollPosition');
+    if (scrollPosition) {
+        window.scrollTo(0, parseInt(scrollPosition));
+        sessionStorage.removeItem('scrollPosition');
+    }
+    
+    // Sauvegarder la position de défilement avant le triage
+    const filterForm = document.querySelector('.filter-bar form');
+    if (filterForm) {
+        const selectElements = filterForm.querySelectorAll('select');
+        selectElements.forEach(select => {
+            select.addEventListener('change', function() {
+                sessionStorage.setItem('scrollPosition', window.scrollY);
+            });
+        });
+    }
+    
     // Gestion des boutons d'ajout aux favoris
     const addToFavoritesButtons = document.querySelectorAll('.add-to-favorites-btn');
     
