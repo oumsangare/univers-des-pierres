@@ -167,7 +167,7 @@
                     <div class="product-card">
                         <div class="product-image">
                             {% if produit_similaire.image %}
-                                <img src="{{ produit_similaire.image.url }}" alt="{{ produit_similaire.nom }}">
+                                <img src="{{ produit_similaire.image.url }}" alt="{{ produit_similaire.nom }}" class="img-fluid" loading="lazy">
                             {% else %}
                                 <img src="{% static 'img/default-product.jpg' %}" alt="{{ produit_similaire.nom }}">
                             {% endif %}

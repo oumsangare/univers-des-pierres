@@ -36,7 +36,7 @@
                                         <div class="product-card">
                                             <div class="product-image position-relative">
                                                 {% if produit.image %}
-                                                    <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" loading="lazy">
+                                                    <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" class="img-fluid" loading="lazy">
                                                 {% else %}
                                                     <img src="{% static 'img/default-product.jpg' %}" alt="{{ produit.nom }}" loading="lazy">
                                                 {% endif %}
